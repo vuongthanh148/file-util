@@ -5,6 +5,9 @@ on:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: write # Explicitly set permissions for the GITHUB_TOKEN
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +22,7 @@ jobs:
           go-version-file: "go.mod"
 
       - name: Build
-        run: go build -v -o futil
+        run: go build -v -o futil ./...
 
       - name: Create Release
         id: create_release
@@ -32,12 +35,15 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Set Release Upload URL
+        run: echo "UPLOAD_URL=${{ steps.create_release.outputs.upload_url }}" >> $GITHUB_ENV
+
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ env.UPLOAD_URL }}
           asset_path: ./futil
           asset_name: futil
           asset_content_type: application/octet-stream
