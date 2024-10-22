@@ -19,7 +19,7 @@ jobs:
           go-version-file: "go.mod"
 
       - name: Build
-        run: go build -v -o futil ./...
+        run: go build -v -o futil
 
       - name: Create Release
         id: create_release
