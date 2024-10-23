@@ -25,7 +25,7 @@ jobs:
         run: go test ./... -v
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: test
 
     steps:
@@ -37,11 +37,24 @@ jobs:
         with:
           go-version-file: "go.mod"
 
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Install dependencies
+        run: go mod tidy -v
+
       - name: Run update_version.sh
         run: ./update_version.sh
 
       - name: Build
-        run: go build -v -o futil
+        run: GOOS=darwin GOARCH=amd64 go build -v -o futil
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v3

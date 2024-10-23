@@ -6,8 +6,8 @@ BINARY_NAME="futil"
 # Set execute permission
 chmod +x $BINARY_NAME
 
-# Move the binary to /usr/local/bin
-sudo mv $BINARY_NAME /usr/local/bin
+# Move the binary to /usr/local/bin/
+sudo mv $BINARY_NAME /usr/local/bin/
 
 # Verify installation
 if command -v $BINARY_NAME &> /dev/null
