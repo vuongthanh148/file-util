@@ -6,11 +6,11 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
-	"os"
+	helpers "kkcompany/helpers"
 )
 
 func ComputeChecksum(file string, md5Flag, sha1Flag, sha256Flag bool) {
-	f, err := os.Open(file)
+	f, err := helpers.OpenFile(file)
 	if err != nil {
 		fmt.Println(err)
 		return

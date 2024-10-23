@@ -3,27 +3,34 @@ package linecount
 import (
 	"bufio"
 	"fmt"
-	"os"
-	"path/filepath"
+	helpers "kkcompany/helpers"
 )
 
 func CountLines(file string) {
-	var f *os.File
-	var err error
+	f, err := helpers.OpenFile(file)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	if file == "-" {
-		f = os.Stdin
-	} else {
-		if file == "" {
-			file = "."
-		}
-		file = filepath.Clean(file)
-		f, err = os.Open(file)
+	// Check if the file is a binary file
+	reader := bufio.NewReader(f)
+	for i := 0; i < 512; i++ {
+		b, err := reader.ReadByte()
 		if err != nil {
-			fmt.Println(err)
+			break
+		}
+		if b == 0 {
+			fmt.Printf("error: Cannot do linecount for binary file '%s'\n", file)
 			return
 		}
-		defer f.Close()
+	}
+
+	// Reset the file pointer to the beginning
+	_, err = f.Seek(0, 0)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 
 	scanner := bufio.NewScanner(f)

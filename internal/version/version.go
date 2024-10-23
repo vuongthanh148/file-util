@@ -2,8 +2,8 @@ package version
 
 import "fmt"
 
-var Version = ""
+var Version = "v1.0.11"
 
 func ShowVersion() {
-	fmt.Printf("futil version %s\n", Version)
+	fmt.Printf("futil %s\n", Version)
 }

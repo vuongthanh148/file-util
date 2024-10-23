@@ -14,6 +14,24 @@ var rootCmd = &cobra.Command{
 	Short: "File Utility",
 }
 
+var helpCmd = &cobra.Command{
+	Use:   "help",
+	Short: "Help about commands",
+	Long:  `Help about commands`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) > 0 {
+			subCmd, _, err := rootCmd.Find(args)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			subCmd.Help()
+		} else {
+			rootCmd.Help()
+		}
+	},
+}
+
 func Execute() {
 	// Handle SIGINT to stop reading from stdin
 	sigs := make(chan os.Signal, 1)
@@ -36,4 +54,7 @@ func init() {
 	rootCmd.AddCommand(linecountCmd)
 	rootCmd.AddCommand(checksumCmd)
 	rootCmd.AddCommand(versionCmd)
+	rootCmd.AddCommand(helpCmd)
+	rootCmd.SetHelpCommand(&cobra.Command{Hidden: true})
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }
