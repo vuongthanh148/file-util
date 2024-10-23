@@ -2,6 +2,8 @@ name: Build and Release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*.*.*"
 
@@ -9,7 +11,7 @@ permissions:
   contents: write # Explicitly set permissions for the GITHUB_TOKEN
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,8 +23,47 @@ jobs:
         with:
           go-version-file: "go.mod"
 
+      - name: Run Tests
+        run: go test ./... -v
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: "go.mod"
+
+      - name: Run update_version.sh
+        run: ./update_version.sh
+
       - name: Build
         run: go build -v -o futil
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: futil
+          path: ./futil
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: futil
+          path: ./
 
       - name: Create Release
         id: create_release
