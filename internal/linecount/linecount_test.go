@@ -16,10 +16,14 @@ func TestCountLines(t *testing.T) {
 	file1 := filepath.Join(tmpDir, "file1.txt")
 	file2 := filepath.Join(tmpDir, "file2.txt")
 	file3 := filepath.Join(tmpDir, "file3.txt")
+	folder := filepath.Join(tmpDir, "folder")
+	binaryFile := filepath.Join(tmpDir, "binaryfile.bin")
 
 	os.WriteFile(file1, []byte("line1\nline2\nline3\n"), 0644)
 	os.WriteFile(file2, []byte("line1\nline2\n"), 0644)
 	os.WriteFile(file3, []byte("line1\n"), 0644)
+	os.Mkdir(folder, 0755)
+	os.WriteFile(binaryFile, []byte{0x00, 0x01, 0x02, 0x03}, 0644)
 
 	tests := []struct {
 		name      string
@@ -48,8 +52,20 @@ func TestCountLines(t *testing.T) {
 		{
 			name:      "Non-existent file",
 			file:      filepath.Join(tmpDir, "nonexistent.txt"),
-			expected:  "open " + filepath.Join(tmpDir, "nonexistent.txt") + ": no such file or directory\n",
+			expected:  "error: No such file '" + filepath.Join(tmpDir, "nonexistent.txt") + "'\n",
 			expectErr: true,
+		},
+		{
+			name:      "Folder check",
+			file:      folder,
+			expected:  "error: Expected file got directory '" + filepath.Join(tmpDir, "folder") + "'\n",
+			expectErr: true,
+		},
+		{
+			name:      "Binary file check",
+			file:      binaryFile,
+			expected:  "error: Cannot do linecount for binary file '" + filepath.Join(tmpDir, "binaryfile.bin") + "'\n",
+			expectErr: false,
 		},
 	}
 

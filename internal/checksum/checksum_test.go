@@ -1,80 +1,65 @@
 package checksum
 
 import (
+	"bytes"
 	"crypto/md5"
 	"crypto/sha1"
 	"crypto/sha256"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestComputeChecksum(t *testing.T) {
+	// Create a temporary file with known content
+	content := []byte("test content")
+	tmpfile, err := os.CreateTemp("", "testfile")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmpfile.Name()) // Clean up
+
+	if _, err := tmpfile.Write(content); err != nil {
+		t.Fatal(err)
+	}
+	if err := tmpfile.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	// Expected checksums
+	expectedMD5 := fmt.Sprintf("MD5: %x\n", md5.Sum(content))
+	expectedSHA1 := fmt.Sprintf("SHA1: %x\n", sha1.Sum(content))
+	expectedSHA256 := fmt.Sprintf("SHA256: %x\n", sha256.Sum256(content))
+
 	tests := []struct {
 		name       string
-		content    string
 		md5Flag    bool
 		sha1Flag   bool
 		sha256Flag bool
 		expected   string
 	}{
-		{
-			name:       "MD5 checksum",
-			content:    "hello",
-			md5Flag:    true,
-			sha1Flag:   false,
-			sha256Flag: false,
-			expected:   fmt.Sprintf("MD5: %x\n", md5.Sum([]byte("hello"))),
-		},
-		{
-			name:       "SHA1 checksum",
-			content:    "hello",
-			md5Flag:    false,
-			sha1Flag:   true,
-			sha256Flag: false,
-			expected:   fmt.Sprintf("SHA1: %x\n", sha1.Sum([]byte("hello"))),
-		},
-		{
-			name:       "SHA256 checksum",
-			content:    "hello",
-			md5Flag:    false,
-			sha1Flag:   false,
-			sha256Flag: true,
-			expected:   fmt.Sprintf("SHA256: %x\n", sha256.Sum256([]byte("hello"))),
-		},
+		{"MD5", true, false, false, expectedMD5},
+		{"SHA1", false, true, false, expectedSHA1},
+		{"SHA256", false, false, true, expectedSHA256},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Create a temporary file with the test content
-			tmpFile, err := ioutil.TempFile("", "testfile")
-			assert.NoError(t, err)
-			defer os.Remove(tmpFile.Name())
-
-			_, err = tmpFile.WriteString(tt.content)
-			assert.NoError(t, err)
-			tmpFile.Close()
-
 			// Capture the output
+			var buf bytes.Buffer
 			old := os.Stdout
 			r, w, _ := os.Pipe()
 			os.Stdout = w
 
-			// Execute the function
-			ComputeChecksum(tmpFile.Name(), tt.md5Flag, tt.sha1Flag, tt.sha256Flag)
+			ComputeChecksum(tmpfile.Name(), tt.md5Flag, tt.sha1Flag, tt.sha256Flag)
 
-			// Restore stdout and read output
 			w.Close()
 			os.Stdout = old
-			var output []byte
-			output, err = ioutil.ReadAll(r)
-			assert.NoError(t, err)
+			buf.ReadFrom(r)
 
-			// Verify the output
-			assert.Equal(t, tt.expected, string(output))
+			if buf.String() != tt.expected {
+				t.Errorf("expected %q, got %q", tt.expected, buf.String())
+			}
 		})
 	}
 }

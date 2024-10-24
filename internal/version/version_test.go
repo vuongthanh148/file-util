@@ -26,7 +26,7 @@ func TestShowVersion(t *testing.T) {
 	buf.ReadFrom(r)
 
 	// Check the output
-	expected := "futil version " + Version + "\n"
+	expected := "futil " + Version + "\n"
 	if buf.String() != expected {
 		t.Errorf("expected %q, got %q", expected, buf.String())
 	}
