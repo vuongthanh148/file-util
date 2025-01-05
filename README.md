@@ -1,8 +1,8 @@
-# KKCOMPANY
+# File utilities
 
 ## Application Design
 
-The `kkcompany` application is designed to provide a suite of file utilities including line counting, checksum computation, and version information. The application is built using the Cobra library for command-line interface management.
+The `file-util` application is designed to provide a suite of file utilities including line counting, checksum computation, and version information. The application is built using the Cobra library for command-line interface management.
 
 ## 3rd-Party Libraries Used
 
@@ -37,10 +37,10 @@ go build -o futil main.go
 
 ### Download
 
-Download suitable binary file and install.sh file from:
+Download a suitable binary file and install.sh file from:
 
 ```
-https://github.com/vuongthanh148/kkcompany/releases
+https://github.com/vuongthanh148/file-util/releases
 ```
 
 ### Install
